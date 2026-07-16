@@ -11,6 +11,14 @@ import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
+import {
+  SidebarProvider,
+  SidebarTrigger,
+  SidebarInset,
+} from "@/components/ui/sidebar";
+import { AppSidebar } from "@/components/app-sidebar";
+import { Toaster } from "@/components/ui/sonner";
+import { Sparkles } from "lucide-react";
 
 function NotFoundComponent() {
   return (
@@ -72,26 +80,31 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   );
 }
 
+const TITLE = "LERO Workplace Assistant — AI tools for everyday work";
+const DESCRIPTION =
+  "Draft emails, plan your day, and research topics with LERO — a lightweight AI copilot built for professionals.";
+
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
   head: () => ({
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "Lovable Generated Project" },
-      { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Lovable Generated Project" },
+      { title: TITLE },
+      { name: "description", content: DESCRIPTION },
+      { property: "og:title", content: TITLE },
+      { property: "og:description", content: DESCRIPTION },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:site", content: "@Lovable" },
     ],
     links: [
+      { rel: "stylesheet", href: appCss },
+      { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
+      { rel: "preconnect", href: "https://fonts.googleapis.com" },
+      { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
         rel: "stylesheet",
-        href: appCss,
+        href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap",
       },
-      { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
     ],
   }),
   shellComponent: RootShell,
@@ -102,7 +115,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootShell({ children }: { children: ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" className="dark">
       <head>
         <HeadContent />
       </head>
@@ -114,13 +127,42 @@ function RootShell({ children }: { children: ReactNode }) {
   );
 }
 
+function AppHeader() {
+  return (
+    <header className="sticky top-0 z-20 flex h-14 items-center gap-3 border-b border-border bg-background/80 px-4 backdrop-blur-md">
+      <SidebarTrigger className="text-muted-foreground" />
+      <div className="flex min-w-0 items-center gap-2">
+        <div className="grid h-7 w-7 shrink-0 place-items-center rounded-md bg-primary/15 text-primary ring-1 ring-primary/20 md:hidden">
+          <Sparkles className="h-3.5 w-3.5" />
+        </div>
+        <div className="flex min-w-0 flex-col leading-tight">
+          <span className="truncate text-sm font-semibold tracking-tight">
+            LERO Workplace Assistant
+          </span>
+          <span className="hidden truncate text-[11px] text-muted-foreground sm:block">
+            Your AI copilot for everyday work
+          </span>
+        </div>
+      </div>
+    </header>
+  );
+}
+
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
 
   return (
     <QueryClientProvider client={queryClient}>
-      {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-      <Outlet />
+      <SidebarProvider>
+        <AppSidebar />
+        <SidebarInset className="min-w-0">
+          <AppHeader />
+          <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 md:px-8 md:py-10">
+            <Outlet />
+          </main>
+        </SidebarInset>
+      </SidebarProvider>
+      <Toaster richColors position="top-right" />
     </QueryClientProvider>
   );
 }
